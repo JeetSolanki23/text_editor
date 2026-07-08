@@ -21,20 +21,30 @@ import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
 import { FontSize } from './components/Editor/FontSizeExtension';
 import { ImageResize } from './components/Editor/ImageResizeExtension';
+import { Indent } from './components/Editor/IndentExtension';
+import { LineHeight } from './components/Editor/LineHeightExtension';
 
 import Editor from './components/Editor/Editor';
 import Toolbar from './components/Toolbar/Toolbar';
 import Stats from './components/Editor/Stats';
+import Outline from './components/Editor/Outline';
+import { Toaster } from './components/ui/toaster';
+import { useToast } from './hooks/use-toast';
 import { db } from './db';
 import debounce from 'lodash.debounce';
 import { exportToDocx, exportToMarkdown, exportToPdf, exportToTxt } from './export/exportUtils';
+import { useGoogleFonts } from './hooks/useGoogleFonts';
+import { compressImage } from './utils/imageUtils';
 
 const DEFAULT_CONTENT = '<h1>Welcome to your new document</h1><p>Start editing to see the magic happen...</p>';
 
 function App() {
+  useGoogleFonts();
+  const { toast } = useToast();
   const [isPageView, setIsPageView] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [initialContent, setInitialContent] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(100);
 
   useEffect(() => {
     const loadDoc = async () => {
@@ -64,6 +74,8 @@ function App() {
       Highlight.configure({ multicolor: true }),
       FontFamily,
       FontSize,
+      Indent,
+      LineHeight,
       TaskList,
       TaskItem.configure({ nested: true }),
       Placeholder.configure({ placeholder: 'Start typing...' }),
@@ -71,29 +83,72 @@ function App() {
       Subscript,
       Superscript,
     ],
-    content: initialContent,
+    content: initialContent || '',
     onUpdate: ({ editor }) => {
       debouncedSave(editor.getHTML());
     },
     editorProps: {
       attributes: {
-        class: `focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto ${
-          isPageView ? 'bg-white shadow-lg min-h-[1123px] w-[794px] p-[96px] my-8 transition-all' : 'w-full max-w-4xl p-8 transition-all'
-        } dark:prose-invert`,
+        class: 'focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto dark:prose-invert transition-all',
+      },
+      handleDrop: (_view, event, _slice, moved) => {
+        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
+          const file = event.dataTransfer.files[0];
+          if (file.type.startsWith('image/')) {
+            compressImage(file).then(base64 => {
+              if (editor) editor.chain().focus().setImage({ src: base64 }).run();
+            });
+            return true;
+          }
+        }
+        return false;
+      },
+      handlePaste: (_view, event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        for (const item of items) {
+          if (item.type.indexOf('image') === 0) {
+            const file = item.getAsFile();
+            if (file) {
+              compressImage(file).then(base64 => {
+                if (editor) editor.chain().focus().setImage({ src: base64 }).run();
+              });
+              return true;
+            }
+          }
+        }
+        return false;
       },
     },
-  }, [initialContent, isPageView]);
+  }, [initialContent === null]);
+
+  useEffect(() => {
+    if (editor) {
+      editor.setOptions({
+        editorProps: {
+          attributes: {
+            class: `focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto dark:prose-invert transition-all origin-top ${
+              isPageView ? 'bg-white shadow-lg min-h-[1123px] w-[794px] p-[96px] my-8' : 'w-full max-w-4xl p-8'
+            }`,
+            style: `transform: scale(${zoom / 100}); transform-origin: top center;`,
+          },
+        },
+      });
+    }
+  }, [editor, isPageView, zoom]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.key === 's') {
         e.preventDefault();
-        if (editor) exportToDocx(editor.getHTML());
+        if (editor) {
+           exportToDocx(editor.getHTML());
+           toast({ title: "Document Exported", description: "Your .docx file is ready." });
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editor]);
+  }, [editor, toast]);
 
   const debouncedSave = useCallback(
     debounce(async (newContent: string) => {
@@ -107,29 +162,48 @@ function App() {
     []
   );
 
-  const handleExport = (format: 'docx' | 'pdf' | 'md' | 'txt') => {
+  const handleExport = async (format: 'docx' | 'pdf' | 'md' | 'txt' | 'print') => {
     if (!editor) return;
     const content = editor.getHTML();
 
-    switch (format) {
-      case 'docx':
-        exportToDocx(content);
-        break;
-      case 'pdf':
-        exportToPdf();
-        break;
-      case 'md':
-        exportToMarkdown(content);
-        break;
-      case 'txt':
-        exportToTxt(content);
-        break;
+    if (format === 'print') {
+      window.print();
+      return;
+    }
+
+    toast({ title: "Exporting...", description: `Preparing your ${format.toUpperCase()} file.` });
+
+    try {
+      switch (format) {
+        case 'docx':
+          await exportToDocx(content);
+          break;
+        case 'pdf':
+          await exportToPdf();
+          break;
+        case 'md':
+          await exportToMarkdown(content);
+          break;
+        case 'txt':
+          await exportToTxt(content);
+          break;
+      }
+      toast({ title: "Success", description: "Document exported successfully." });
+    } catch (e) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to export document." });
     }
   };
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const handleNewDocument = () => {
+    if (window.confirm("Start a new document? All unsaved changes will be lost.")) {
+      editor?.commands.setContent(DEFAULT_CONTENT);
+      toast({ title: "New Document", description: "Editor has been reset." });
+    }
   };
 
   if (initialContent === null) {
@@ -145,14 +219,23 @@ function App() {
         togglePageView={() => setIsPageView(!isPageView)}
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}
+        zoom={zoom}
+        onZoomChange={setZoom}
+        onNewDocument={handleNewDocument}
       />
-      <main className="flex-1 overflow-auto">
-        <Editor
-          editor={editor}
-          isPageView={isPageView}
-        />
-      </main>
+      <div className="flex-1 flex overflow-hidden">
+        <Outline editor={editor} />
+        <main className="flex-1 overflow-auto bg-muted/20 custom-scrollbar">
+          <div className="min-h-full flex justify-center">
+            <Editor
+              editor={editor}
+              isPageView={isPageView}
+            />
+          </div>
+        </main>
+      </div>
       <Stats editor={editor} />
+      <Toaster />
     </div>
   );
 }
