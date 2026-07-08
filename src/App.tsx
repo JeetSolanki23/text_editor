@@ -32,6 +32,7 @@ import { Toaster } from './components/ui/toaster';
 import { useToast } from './hooks/use-toast';
 import { db } from './db';
 import debounce from 'lodash.debounce';
+import DOMPurify from 'dompurify';
 import { exportToDocx, exportToMarkdown, exportToPdf, exportToTxt } from './export/exportUtils';
 import { useGoogleFonts } from './hooks/useGoogleFonts';
 import { compressImage } from './utils/imageUtils';
@@ -85,7 +86,8 @@ function App() {
     ],
     content: initialContent || '',
     onUpdate: ({ editor }) => {
-      debouncedSave(editor.getHTML());
+      const cleanHTML = DOMPurify.sanitize(editor.getHTML());
+      debouncedSave(cleanHTML);
     },
     editorProps: {
       attributes: {
@@ -126,8 +128,8 @@ function App() {
       editor.setOptions({
         editorProps: {
           attributes: {
-            class: `focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto dark:prose-invert transition-all origin-top ${
-              isPageView ? 'bg-white shadow-lg min-h-[1123px] w-[794px] p-[96px] my-8' : 'w-full max-w-4xl p-8'
+            class: `focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto dark:prose-invert transition-all origin-top editor-page ${
+              isPageView ? 'min-h-[1123px] w-[794px] p-[96px] my-8 shadow-lg' : 'w-full max-w-4xl p-8'
             }`,
             style: `transform: scale(${zoom / 100}); transform-origin: top center;`,
           },
@@ -195,8 +197,13 @@ function App() {
   };
 
   const toggleDarkMode = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
+    if (newMode) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
   };
 
   const handleNewDocument = () => {
@@ -211,7 +218,7 @@ function App() {
   }
 
   return (
-    <div className={`min-h-screen flex flex-col ${isDarkMode ? 'dark' : ''} bg-muted/10 transition-colors`}>
+    <div className={`min-h-screen h-screen flex flex-col bg-background text-foreground transition-colors overflow-hidden`}>
       <Toolbar
         editor={editor}
         onExport={handleExport}
@@ -225,7 +232,7 @@ function App() {
       />
       <div className="flex-1 flex overflow-hidden">
         <Outline editor={editor} />
-        <main className="flex-1 overflow-auto bg-muted/20 custom-scrollbar">
+        <main className="flex-1 overflow-auto bg-muted/20 dark:bg-background custom-scrollbar relative">
           <div className="min-h-full flex justify-center">
             <Editor
               editor={editor}

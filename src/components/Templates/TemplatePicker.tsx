@@ -34,9 +34,9 @@ const TemplatePicker = ({ editor }: TemplatePickerProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs font-normal">
+        <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs font-normal shrink-0">
           <LayoutPanelLeft size={16} />
-          Templates
+          <span className="hidden md:inline">Templates</span>
           <ChevronDown size={12} className="opacity-50" />
         </Button>
       </DropdownMenuTrigger>

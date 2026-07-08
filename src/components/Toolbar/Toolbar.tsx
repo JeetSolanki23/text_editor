@@ -110,7 +110,7 @@ const Toolbar = ({
           size="sm"
           onClick={onClick}
           disabled={disabled}
-          className={cn("h-8 w-8 p-0", isActive && "bg-accent text-accent-foreground", className)}
+          className={cn("h-8 w-8 p-0 shrink-0", isActive && "bg-accent text-accent-foreground", className)}
         >
           {children}
         </Button>
@@ -124,8 +124,8 @@ const Toolbar = ({
 
   return (
     <TooltipProvider delayDuration={400}>
-      <div className="sticky top-0 z-50 flex flex-wrap items-center gap-1 p-1 border-b bg-background shadow-sm overflow-x-auto max-w-full no-print">
-        <div className="flex items-center gap-0.5">
+      <div className="sticky top-0 z-50 flex items-center gap-1 p-1 border-b bg-background shadow-sm overflow-x-auto no-print scrollbar-hide">
+        <div className="flex items-center gap-0.5 shrink-0">
           <ToolbarButton onClick={onNewDocument} title="New Document">
             <FilePlus size={16} />
           </ToolbarButton>
@@ -135,18 +135,23 @@ const Toolbar = ({
           <ToolbarButton onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} title="Redo" shortcut="Ctrl+Y">
             <Redo size={16} />
           </ToolbarButton>
-          <ToolbarButton onClick={() => onExport('print')} title="Print">
-            <Printer size={16} />
-          </ToolbarButton>
+          <div className="hidden sm:flex items-center gap-0.5">
+            <ToolbarButton onClick={() => onExport('print')} title="Print">
+              <Printer size={16} />
+            </ToolbarButton>
+          </div>
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs font-normal">
-                {fontFamilies.find(f => f.value === (editor.getAttributes('textStyle').fontFamily || 'Inter, sans-serif'))?.label || 'Font'}
+                <span className="hidden md:inline">
+                  {fontFamilies.find(f => f.value === (editor.getAttributes('textStyle').fontFamily || 'Inter, sans-serif'))?.label || 'Font'}
+                </span>
+                <span className="md:hidden">F</span>
                 <ChevronDown size={12} className="opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -161,7 +166,7 @@ const Toolbar = ({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="sm" className="h-8 gap-1 px-2 text-xs font-normal w-16">
+              <Button variant="ghost" size="sm" className="h-8 gap-1 px-1 text-xs font-normal w-12 sm:w-16">
                 {editor.getAttributes('textStyle').fontSize || '16px'}
                 <ChevronDown size={12} className="opacity-50" />
               </Button>
@@ -176,9 +181,9 @@ const Toolbar = ({
           </DropdownMenu>
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           <ToolbarButton onClick={() => editor.chain().focus().toggleBold().run()} isActive={editor.isActive('bold')} title="Bold" shortcut="Ctrl+B">
             <Bold size={16} />
           </ToolbarButton>
@@ -188,31 +193,35 @@ const Toolbar = ({
           <ToolbarButton onClick={() => editor.chain().focus().toggleUnderline().run()} isActive={editor.isActive('underline')} title="Underline" shortcut="Ctrl+U">
             <UnderlineIcon size={16} />
           </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')} title="Strikethrough">
-            <Strikethrough size={16} />
-          </ToolbarButton>
+          <div className="hidden sm:flex items-center gap-0.5">
+            <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')} title="Strikethrough">
+              <Strikethrough size={16} />
+            </ToolbarButton>
+          </div>
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('left').run()} isActive={editor.isActive({ textAlign: 'left' })} title="Align Left">
             <AlignLeft size={16} />
           </ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('center').run()} isActive={editor.isActive({ textAlign: 'center' })} title="Align Center">
             <AlignCenter size={16} />
           </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} isActive={editor.isActive({ textAlign: 'right' })} title="Align Right">
-            <AlignRight size={16} />
-          </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('justify').run()} isActive={editor.isActive({ textAlign: 'justify' })} title="Justify">
-            <AlignJustify size={16} />
-          </ToolbarButton>
+          <div className="hidden sm:flex items-center gap-0.5">
+            <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('right').run()} isActive={editor.isActive({ textAlign: 'right' })} title="Align Right">
+              <AlignRight size={16} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().setTextAlign('justify').run()} isActive={editor.isActive({ textAlign: 'justify' })} title="Justify">
+              <AlignJustify size={16} />
+            </ToolbarButton>
+          </div>
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -235,23 +244,25 @@ const Toolbar = ({
           </ToolbarButton>
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           <ToolbarButton onClick={() => editor.chain().focus().toggleBulletList().run()} isActive={editor.isActive('bulletList')} title="Bullet List">
             <List size={16} />
           </ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().toggleOrderedList().run()} isActive={editor.isActive('orderedList')} title="Ordered List">
             <ListOrdered size={16} />
           </ToolbarButton>
-          <ToolbarButton onClick={() => editor.chain().focus().toggleTaskList().run()} isActive={editor.isActive('taskList')} title="Task List">
-            <CheckSquare size={16} />
-          </ToolbarButton>
+          <div className="hidden sm:flex items-center gap-0.5">
+            <ToolbarButton onClick={() => editor.chain().focus().toggleTaskList().run()} isActive={editor.isActive('taskList')} title="Task List">
+              <CheckSquare size={16} />
+            </ToolbarButton>
+          </div>
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-0.5 shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -287,23 +298,21 @@ const Toolbar = ({
           </div>
         </div>
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
 
         <TemplatePicker editor={editor} />
 
-        <Separator orientation="vertical" className="h-6 mx-1" />
+        <div className="flex items-center gap-0.5 ml-auto shrink-0">
+          <div className="hidden lg:flex items-center gap-1 mr-2">
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onZoomChange(Math.max(50, zoom - 10))}>
+              <Minus size={14} />
+            </Button>
+            <span className="text-xs min-w-[3rem] text-center">{zoom}%</span>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onZoomChange(Math.min(200, zoom + 10))}>
+              <Plus size={14} />
+            </Button>
+          </div>
 
-        <div className="flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onZoomChange(Math.max(50, zoom - 10))}>
-            <Minus size={14} />
-          </Button>
-          <span className="text-xs min-w-[3rem] text-center">{zoom}%</span>
-          <Button variant="ghost" size="sm" className="h-8 w-8 p-0" onClick={() => onZoomChange(Math.min(200, zoom + 10))}>
-            <Plus size={14} />
-          </Button>
-        </div>
-
-        <div className="flex items-center gap-0.5 ml-auto">
           <FindReplace editor={editor} />
 
           <ToolbarButton onClick={togglePageView} isActive={isPageView} title={isPageView ? "Switch to Continuous View" : "Switch to Page View"}>
@@ -315,9 +324,9 @@ const Toolbar = ({
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8 gap-1 ml-2">
+              <Button variant="outline" size="sm" className="h-8 gap-1 ml-1 sm:ml-2">
                 <FileDown size={16} />
-                Export
+                <span className="hidden sm:inline">Export</span>
                 <ChevronDown size={12} className="opacity-50" />
               </Button>
             </DropdownMenuTrigger>
@@ -326,6 +335,8 @@ const Toolbar = ({
               <DropdownMenuItem onClick={() => onExport('pdf')}>PDF Document</DropdownMenuItem>
               <DropdownMenuItem onClick={() => onExport('md')}>Markdown File</DropdownMenuItem>
               <DropdownMenuItem onClick={() => onExport('txt')}>Plain Text File</DropdownMenuItem>
+              <DropdownMenuSeparator className="sm:hidden" />
+              <DropdownMenuItem onClick={() => onExport('print')} className="sm:hidden">Print Document</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

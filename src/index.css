@@ -56,28 +56,31 @@
     --input: #e5e5e5;
     --ring: #0a0a0a;
     --radius: 0.5rem;
+    --page-bg: #ffffff;
   }
 
   .dark {
-    --background: #0a0a0a;
+    --background: #09090b;
     --foreground: #fafafa;
-    --card: #0a0a0a;
+    --card: #09090b;
     --card-foreground: #fafafa;
-    --popover: #0a0a0a;
+    --popover: #09090b;
     --popover-foreground: #fafafa;
     --primary: #fafafa;
-    --primary-foreground: #171717;
-    --secondary: #262626;
+    --primary-foreground: #18181b;
+    --secondary: #27272a;
     --secondary-foreground: #fafafa;
-    --muted: #262626;
-    --muted-foreground: #a3a3a3;
-    --accent: #262626;
+    --muted: #27272a;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
     --accent-foreground: #fafafa;
     --destructive: #7f1d1d;
     --destructive-foreground: #fafafa;
-    --border: #262626;
-    --input: #262626;
-    --ring: #d4d4d4;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #d4d4d8;
+    --radius: 0.5rem;
+    --page-bg: #1c1c1f;
   }
 }
 
@@ -149,18 +152,20 @@
 /* Task list styles */
 .tiptap ul[data-type="taskList"] {
   list-style: none;
-  padding: 0;
+  padding: 0 !important;
 }
 
 .tiptap ul[data-type="taskList"] li {
   display: flex;
   align-items: flex-start;
+  margin-bottom: 0.5rem;
 }
 
 .tiptap ul[data-type="taskList"] li > label {
   flex: 0 0 auto;
   user-select: none;
   margin-right: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .tiptap ul[data-type="taskList"] li > div {
@@ -201,17 +206,17 @@
     min-height: auto !important;
     background: white !important;
     border: none !important;
+    color: black !important;
   }
 
-  /* Force display headings and text clearly in print */
   .prose {
     max-width: none !important;
   }
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -220,9 +225,35 @@
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--muted);
-  border-radius: 5px;
+  border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--muted-foreground);
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Page View Specifics */
+.editor-page {
+  background-color: var(--page-bg);
+}
+
+.dark .tiptap {
+  color: #fafafa !important;
+}
+
+/* Ensure headings and other elements are light in dark mode */
+.dark .prose :where(h1, h2, h3, h4, h5, h6, strong, em, code, pre):not(:where([class~="not-prose"] *)) {
+  color: #ffffff;
+}
+
+.dark .tiptap th {
+  background-color: #27272a;
 }

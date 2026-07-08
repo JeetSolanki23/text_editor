@@ -12,15 +12,77 @@ const FindReplace = ({ editor }: FindReplaceProps) => {
   const [findText, setFindText] = useState('');
   const [replaceText, setReplaceText] = useState('');
 
-  const handleReplace = () => {
+  const handleReplaceAll = () => {
     if (!editor || !findText) return;
-    const content = editor.getHTML();
-    const newContent = content.replace(new RegExp(findText, 'g'), replaceText);
-    editor.commands.setContent(newContent, { emitUpdate: true });
+
+    const { state } = editor;
+    const { doc } = state;
+    const replacements: { from: number; to: number }[] = [];
+
+    doc.descendants((node, pos) => {
+      if (node.isText && node.text) {
+        const regex = new RegExp(findText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+        let match;
+        while ((match = regex.exec(node.text)) !== null) {
+          replacements.push({
+            from: pos + match.index,
+            to: pos + match.index + findText.length,
+          });
+        }
+      }
+    });
+
+    if (replacements.length === 0) return;
+
+    editor.chain().focus().command(({ tr }) => {
+      for (let i = replacements.length - 1; i >= 0; i--) {
+        const { from, to } = replacements[i];
+        tr.insertText(replaceText, from, to);
+      }
+      return true;
+    }).run();
   };
 
-  const handleReplaceAll = () => {
-    handleReplace();
+  const handleReplace = () => {
+    if (!editor || !findText) return;
+
+    const { state } = editor;
+    const { selection, doc } = state;
+    const { from } = selection;
+
+    let foundPos = -1;
+    doc.descendants((node, pos) => {
+      if (foundPos !== -1) return false;
+      if (node.isText && node.text && pos + node.text.length > from) {
+        const startSearch = Math.max(0, from - pos);
+        const index = node.text.indexOf(findText, startSearch);
+        if (index !== -1) {
+          foundPos = pos + index;
+          return false;
+        }
+      }
+      return true;
+    });
+
+    if (foundPos !== -1) {
+      editor.chain().focus().insertText(replaceText, foundPos, foundPos + findText.length).run();
+    } else {
+      // Wrap around search from beginning
+      doc.descendants((node, pos) => {
+        if (foundPos !== -1) return false;
+        if (node.isText && node.text) {
+          const index = node.text.indexOf(findText);
+          if (index !== -1) {
+            foundPos = pos + index;
+            return false;
+          }
+        }
+        return true;
+      });
+      if (foundPos !== -1) {
+        editor.chain().focus().insertText(replaceText, foundPos, foundPos + findText.length).run();
+      }
+    }
   };
 
   return (

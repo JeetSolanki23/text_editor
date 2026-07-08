@@ -45,7 +45,7 @@ const Outline = ({ editor }: OutlineProps) => {
   if (items.length === 0) return null;
 
   return (
-    <div className="w-64 border-r bg-background/50 h-full overflow-y-auto p-4 hidden lg:block">
+    <div className="w-64 border-r bg-background/50 h-full overflow-y-auto p-4 hidden xl:block shrink-0">
       <div className="flex items-center gap-2 mb-4 text-sm font-semibold opacity-70">
         <ListTree size={16} />
         OUTLINE

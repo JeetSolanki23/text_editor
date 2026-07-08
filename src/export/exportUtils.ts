@@ -2,6 +2,7 @@ import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import TurndownService from 'turndown';
+import HTMLToDOCX from 'html-to-docx';
 
 export const exportToTxt = (content: string, filename: string = 'document.txt') => {
   const tempEl = document.createElement('div');
@@ -22,40 +23,40 @@ export const exportToPdf = async (filename: string = 'document.pdf') => {
   const element = document.querySelector('.tiptap') as HTMLElement;
   if (!element) return;
 
-  const canvas = await html2canvas(element, {
-    scale: 2,
-    useCORS: true,
-    logging: false,
-  });
-
-  const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF({
     orientation: 'portrait',
-    unit: 'px',
+    unit: 'mm',
     format: 'a4',
   });
 
-  const imgProps = pdf.getImageProperties(imgData);
-  const pdfWidth = pdf.internal.pageSize.getWidth();
-  const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-
-  pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  pdf.save(filename);
+  // Using jsPDF's html method for text-selectable PDF
+  // Note: This requires a relatively modern jsPDF and might need some styling adjustments
+  await pdf.html(element, {
+    callback: (doc) => {
+      doc.save(filename);
+    },
+    x: 10,
+    y: 10,
+    width: 190,
+    windowWidth: 794, // Match our editor width for consistent scaling
+    autoPaging: 'text',
+  });
 };
 
 export const exportToDocx = async (content: string, filename: string = 'document.docx') => {
-  const header = `
-    <html xmlns:o='urn:schemas-microsoft-com:office:office'
-          xmlns:w='urn:schemas-microsoft-com:office:word'
-          xmlns='http://www.w3.org/TR/REC-html40'>
-    <head><meta charset='utf-8'><title>Export</title></head><body>
-  `;
-  const footer = "</body></html>";
-  const sourceHTML = header + content + footer;
-
-  const blob = new Blob(['\ufeff', sourceHTML], {
-    type: 'application/msword'
-  });
-
-  saveAs(blob, filename);
+  try {
+    const fileBuffer = await HTMLToDOCX(content, undefined, {
+      table: { row: { cantSplit: true } },
+      footer: true,
+      pageNumber: true,
+    });
+    saveAs(fileBuffer, filename);
+  } catch (error) {
+    console.error('DOCX Export Error:', error);
+    // Fallback to simple blob if html-to-docx fails
+    const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'></head><body>`;
+    const footer = "</body></html>";
+    const blob = new Blob(['\ufeff', header + content + footer], { type: 'application/msword' });
+    saveAs(blob, filename);
+  }
 };
