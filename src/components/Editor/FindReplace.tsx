@@ -65,7 +65,7 @@ const FindReplace = ({ editor }: FindReplaceProps) => {
     });
 
     if (foundPos !== -1) {
-      editor.chain().focus().insertText(replaceText, foundPos, foundPos + findText.length).run();
+      editor.chain().focus().insertContentAt({ from: foundPos, to: foundPos + findText.length }, replaceText).run();
     } else {
       // Wrap around search from beginning
       doc.descendants((node, pos) => {
@@ -80,7 +80,7 @@ const FindReplace = ({ editor }: FindReplaceProps) => {
         return true;
       });
       if (foundPos !== -1) {
-        editor.chain().focus().insertText(replaceText, foundPos, foundPos + findText.length).run();
+        editor.chain().focus().insertContentAt({ from: foundPos, to: foundPos + findText.length }, replaceText).run();
       }
     }
   };

@@ -1,6 +1,5 @@
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import TurndownService from 'turndown';
 import HTMLToDOCX from 'html-to-docx';
 
