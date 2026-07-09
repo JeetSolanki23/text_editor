@@ -20,6 +20,21 @@ export const ImageResize = Extension.create({
               height: attributes.height,
             }),
           },
+          align: {
+            default: 'center',
+            renderHTML: (attributes) => {
+              if (attributes.align === 'left') return { style: 'float: left; margin-right: 1rem; margin-bottom: 0.5rem;' };
+              if (attributes.align === 'right') return { style: 'float: right; margin-left: 1rem; margin-bottom: 0.5rem;' };
+              if (attributes.align === 'center') return { style: 'display: block; margin: 1rem auto;' };
+              return {};
+            },
+          },
+          alt: {
+            default: null,
+            renderHTML: (attributes) => ({
+              alt: attributes.alt,
+            }),
+          },
         },
       },
     ];

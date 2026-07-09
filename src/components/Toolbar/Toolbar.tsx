@@ -8,6 +8,10 @@ import {
   AlignCenter,
   AlignRight,
   AlignJustify,
+  AlignLeft as AlignStart,
+  AlignCenter as AlignCenterIcon,
+  AlignRight as AlignEnd,
+  Settings,
   List,
   ListOrdered,
   Undo,
@@ -28,6 +32,13 @@ import {
   FilePlus,
   Printer,
   Scaling,
+  Baseline,
+  Highlighter,
+  Eraser,
+  Subscript as SubscriptIcon,
+  Superscript as SuperscriptIcon,
+  Link as LinkIcon,
+  Scissors,
 } from 'lucide-react';
 import React from 'react';
 import { compressImage } from '../../utils/imageUtils';
@@ -40,6 +51,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from '../ui/dropdown-menu';
+import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover';
 import { Separator } from '../ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import FindReplace from '../Editor/FindReplace';
@@ -134,6 +146,9 @@ const Toolbar = ({
           <ToolbarButton onClick={onNewDocument} title="New Document">
             <FilePlus size={16} />
           </ToolbarButton>
+          <ToolbarButton onClick={() => (editor as any).commands.setPageBreak()} title="Insert Page Break">
+            <Scissors size={16} />
+          </ToolbarButton>
           <ToolbarButton onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} title="Undo" shortcut="Ctrl+Z">
             <Undo size={16} />
           </ToolbarButton>
@@ -202,7 +217,74 @@ const Toolbar = ({
             <ToolbarButton onClick={() => editor.chain().focus().toggleStrike().run()} isActive={editor.isActive('strike')} title="Strikethrough">
               <Strikethrough size={16} />
             </ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().toggleSubscript().run()} isActive={editor.isActive('subscript')} title="Subscript">
+              <SubscriptIcon size={16} />
+            </ToolbarButton>
+            <ToolbarButton onClick={() => editor.chain().focus().toggleSuperscript().run()} isActive={editor.isActive('superscript')} title="Superscript">
+              <SuperscriptIcon size={16} />
+            </ToolbarButton>
           </div>
+        </div>
+
+        <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
+
+        <div className="flex items-center gap-0.5 shrink-0">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Text Color">
+                <Baseline size={16} style={{ color: editor.getAttributes('textStyle').color }} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-40 p-2">
+              <div className="grid grid-cols-5 gap-1">
+                {['#000000', '#ef4444', '#f97316', '#f59e0b', '#10b981', '#3b82f6', '#6366f1', '#8b5cf6', '#ec4899', '#737373'].map(color => (
+                  <button
+                    key={color}
+                    className="w-6 h-6 rounded-sm border border-border"
+                    style={{ backgroundColor: color }}
+                    onClick={() => editor.chain().focus().setColor(color).run()}
+                  />
+                ))}
+                <Button variant="ghost" size="sm" className="col-span-5 h-6 text-[10px]" onClick={() => editor.chain().focus().unsetColor().run()}>Reset</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Highlight Color">
+                <Highlighter size={16} />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-40 p-2">
+              <div className="grid grid-cols-5 gap-1">
+                {['#fef08a', '#bbf7d0', '#bfdbfe', '#fbcfe8', '#ddd6fe', '#ffedd5', '#f3f4f6', '#fae8ff', '#e0f2fe', '#d1fae5'].map(color => (
+                  <button
+                    key={color}
+                    className="w-6 h-6 rounded-sm border border-border"
+                    style={{ backgroundColor: color }}
+                    onClick={() => editor.chain().focus().toggleHighlight({ color }).run()}
+                  />
+                ))}
+                <Button variant="ghost" size="sm" className="col-span-5 h-6 text-[10px]" onClick={() => editor.chain().focus().unsetHighlight().run()}>Reset</Button>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          <ToolbarButton onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()} title="Clear Formatting">
+            <Eraser size={16} />
+          </ToolbarButton>
+
+          <ToolbarButton
+            onClick={() => {
+              const url = window.prompt('URL');
+              if (url) editor.chain().focus().setLink({ href: url }).run();
+            }}
+            isActive={editor.isActive('link')}
+            title="Insert Link"
+          >
+            <LinkIcon size={16} />
+          </ToolbarButton>
         </div>
 
         <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />
@@ -301,6 +383,56 @@ const Toolbar = ({
               <ImageIcon size={16} />
             </ToolbarButton>
           </div>
+
+          {editor.isActive('image') && (
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Image Settings">
+                  <Settings size={16} />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-60 p-3 space-y-3">
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase opacity-50">Alignment</label>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline" size="sm" className="h-8 flex-1"
+                      onClick={() => editor.chain().focus().updateAttributes('image', { align: 'left' }).run()}
+                    >
+                      <AlignStart size={14} />
+                    </Button>
+                    <Button
+                      variant="outline" size="sm" className="h-8 flex-1"
+                      onClick={() => editor.chain().focus().updateAttributes('image', { align: 'center' }).run()}
+                    >
+                      <AlignCenterIcon size={14} />
+                    </Button>
+                    <Button
+                      variant="outline" size="sm" className="h-8 flex-1"
+                      onClick={() => editor.chain().focus().updateAttributes('image', { align: 'right' }).run()}
+                    >
+                      <AlignEnd size={14} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold uppercase opacity-50">Alt Text</label>
+                  <input
+                    className="w-full text-xs p-1 border rounded bg-transparent"
+                    placeholder="Enter description..."
+                    defaultValue={editor.getAttributes('image').alt || ''}
+                    onBlur={(e) => editor.chain().focus().updateAttributes('image', { alt: e.target.value }).run()}
+                  />
+                </div>
+                <Button
+                  variant="destructive" size="sm" className="w-full h-8 text-xs"
+                  onClick={() => editor.chain().focus().deleteSelection().run()}
+                >
+                  Remove Image
+                </Button>
+              </PopoverContent>
+            </Popover>
+          )}
         </div>
 
         <Separator orientation="vertical" className="h-6 mx-1 shrink-0" />

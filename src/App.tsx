@@ -23,6 +23,7 @@ import { FontSize } from './components/Editor/FontSizeExtension';
 import { ImageResize } from './components/Editor/ImageResizeExtension';
 import { Indent } from './components/Editor/IndentExtension';
 import { LineHeight } from './components/Editor/LineHeightExtension';
+import { PageBreak } from './components/Editor/PageBreakExtension';
 
 import Editor from './components/Editor/Editor';
 import Toolbar from './components/Toolbar/Toolbar';
@@ -85,6 +86,7 @@ function App() {
       CharacterCount,
       Subscript,
       Superscript,
+      PageBreak,
     ],
     content: initialContent || '',
     onUpdate: ({ editor }) => {

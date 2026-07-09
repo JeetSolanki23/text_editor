@@ -21,10 +21,19 @@ const Editor = ({ editor, isPageView, orientation }: EditorProps) => {
             <div className="hidden md:block">
               <Ruler orientation="vertical" pageOrientation={orientation} />
             </div>
-            <EditorContent
-              editor={editor}
-              className="bg-transparent"
-            />
+            <div className="relative bg-transparent">
+              <div className="absolute top-0 left-0 right-0 h-[96px] flex items-center justify-center text-[10px] opacity-30 pointer-events-none select-none uppercase tracking-widest border-b border-dashed">
+                Header
+              </div>
+              <EditorContent
+                editor={editor}
+                className="bg-transparent"
+              />
+              <div className="absolute bottom-0 left-0 right-0 h-[96px] flex flex-col items-center justify-center text-[10px] opacity-30 pointer-events-none select-none uppercase tracking-widest border-t border-dashed">
+                <span>Footer</span>
+                <span className="mt-1">Page 1</span>
+              </div>
+            </div>
           </div>
         </div>
       )}

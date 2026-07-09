@@ -149,6 +149,29 @@
   cursor: col-resize;
 }
 
+.page-break {
+  border-top: 2px dashed #ccc;
+  position: relative;
+  margin: 2rem 0;
+  pointer-events: none;
+}
+
+.page-break::after {
+  content: 'Page Break';
+  position: absolute;
+  top: -10px;
+  right: 10px;
+  background: white;
+  padding: 0 5px;
+  font-size: 10px;
+  color: #999;
+  text-transform: uppercase;
+}
+
+.dark .page-break::after {
+  background: #1c1c1f;
+}
+
 /* Task list styles */
 .tiptap ul[data-type="taskList"] {
   list-style: none;
