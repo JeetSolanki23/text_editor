@@ -245,6 +245,10 @@
   background-color: var(--page-bg);
 }
 
+.tiptap {
+  color: #111827 !important; /* High contrast gray-900 */
+}
+
 .dark .tiptap {
   color: #fafafa !important;
 }
@@ -252,6 +256,11 @@
 /* Ensure headings and other elements are light in dark mode */
 .dark .prose :where(h1, h2, h3, h4, h5, h6, strong, em, code, pre):not(:where([class~="not-prose"] *)) {
   color: #ffffff;
+}
+
+/* Ensure headings are dark enough in light mode */
+.prose :where(h1, h2, h3, h4, h5, h6, strong):not(:where(.dark *)) {
+  color: #030712; /* gray-950 */
 }
 
 .dark .tiptap th {
