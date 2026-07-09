@@ -46,6 +46,8 @@ function App() {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [initialContent, setInitialContent] = useState<string | null>(null);
   const [zoom, setZoom] = useState(100);
+  const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
+  const [, setTick] = useState(0);
 
   useEffect(() => {
     const loadDoc = async () => {
@@ -88,6 +90,7 @@ function App() {
     onUpdate: ({ editor }) => {
       const cleanHTML = DOMPurify.sanitize(editor.getHTML());
       debouncedSave(cleanHTML);
+      setTick(t => t + 1); // Force re-render for stats
     },
     editorProps: {
       attributes: {
@@ -125,18 +128,22 @@ function App() {
 
   useEffect(() => {
     if (editor) {
+      const isLandscape = orientation === 'landscape';
+      const pageWidth = isLandscape ? '1123px' : '794px';
+      const minHeight = isLandscape ? '794px' : '1123px';
+
       editor.setOptions({
         editorProps: {
           attributes: {
             class: `focus:outline-none prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto dark:prose-invert transition-all origin-top editor-page ${
-              isPageView ? 'min-h-[1123px] w-[794px] p-[96px] my-8 shadow-lg' : 'w-full max-w-4xl p-8'
+              isPageView ? 'p-[96px] my-8 shadow-lg' : 'w-full max-w-4xl p-8'
             }`,
-            style: `transform: scale(${zoom / 100}); transform-origin: top center;`,
+            style: `transform: scale(${zoom / 100}); transform-origin: top center; ${isPageView ? `min-height: ${minHeight}; width: ${pageWidth};` : ''}`,
           },
         },
       });
     }
-  }, [editor, isPageView, zoom]);
+  }, [editor, isPageView, zoom, orientation]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -208,7 +215,7 @@ function App() {
 
   const handleNewDocument = () => {
     if (window.confirm("Start a new document? All unsaved changes will be lost.")) {
-      editor?.commands.setContent(DEFAULT_CONTENT);
+      editor?.chain().focus().selectAll().deleteSelection().insertContent(DEFAULT_CONTENT).run();
       toast({ title: "New Document", description: "Editor has been reset." });
     }
   };
@@ -229,6 +236,8 @@ function App() {
         zoom={zoom}
         onZoomChange={setZoom}
         onNewDocument={handleNewDocument}
+        orientation={orientation}
+        onOrientationChange={setOrientation}
       />
       <div className="flex-1 flex overflow-hidden">
         <Outline editor={editor} />
@@ -237,6 +246,7 @@ function App() {
             <Editor
               editor={editor}
               isPageView={isPageView}
+              orientation={orientation}
             />
           </div>
         </main>

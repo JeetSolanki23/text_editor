@@ -25,9 +25,9 @@ const TemplatePicker = ({ editor }: TemplatePickerProps) => {
 
   const applyTemplate = (content: string, mode: 'append' | 'fresh') => {
     if (mode === 'fresh') {
-      editor.commands.setContent(content);
+      editor.chain().focus().selectAll().deleteSelection().insertContent(content).run();
     } else {
-      editor.commands.insertContent(content);
+      editor.chain().focus().insertContent(content).run();
     }
   };
 

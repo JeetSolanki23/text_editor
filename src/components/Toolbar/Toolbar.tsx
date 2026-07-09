@@ -27,6 +27,7 @@ import {
   Type,
   FilePlus,
   Printer,
+  Scaling,
 } from 'lucide-react';
 import React from 'react';
 import { compressImage } from '../../utils/imageUtils';
@@ -54,6 +55,8 @@ interface ToolbarProps {
   zoom: number;
   onZoomChange: (zoom: number) => void;
   onNewDocument: () => void;
+  orientation: 'portrait' | 'landscape';
+  onOrientationChange: (orientation: 'portrait' | 'landscape') => void;
 }
 
 const Toolbar = ({
@@ -66,6 +69,8 @@ const Toolbar = ({
   zoom,
   onZoomChange,
   onNewDocument,
+  orientation,
+  onOrientationChange,
 }: ToolbarProps) => {
   if (!editor) return null;
 
@@ -321,6 +326,15 @@ const Toolbar = ({
           <ToolbarButton onClick={toggleDarkMode} title="Toggle Theme">
             {isDarkMode ? <Sun size={16} /> : <Moon size={16} />}
           </ToolbarButton>
+
+          {isPageView && (
+            <ToolbarButton
+              onClick={() => onOrientationChange(orientation === 'portrait' ? 'landscape' : 'portrait')}
+              title={`Switch to ${orientation === 'portrait' ? 'Landscape' : 'Portrait'}`}
+            >
+              <Scaling size={16} className={orientation === 'landscape' ? 'rotate-90' : ''} />
+            </ToolbarButton>
+          )}
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>

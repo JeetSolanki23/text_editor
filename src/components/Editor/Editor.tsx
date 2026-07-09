@@ -4,9 +4,10 @@ import Ruler from './Ruler';
 interface EditorProps {
   editor: TiptapEditor | null;
   isPageView: boolean;
+  orientation: 'portrait' | 'landscape';
 }
 
-const Editor = ({ editor, isPageView }: EditorProps) => {
+const Editor = ({ editor, isPageView, orientation }: EditorProps) => {
   if (!editor) return null;
 
   return (
@@ -14,11 +15,11 @@ const Editor = ({ editor, isPageView }: EditorProps) => {
       {isPageView && (
         <div className="relative shadow-2xl transition-all max-w-full overflow-x-auto custom-scrollbar bg-white dark:bg-muted/10">
           <div className="hidden md:block">
-            <Ruler orientation="horizontal" />
+            <Ruler orientation="horizontal" pageOrientation={orientation} />
           </div>
           <div className="flex">
             <div className="hidden md:block">
-              <Ruler orientation="vertical" />
+              <Ruler orientation="vertical" pageOrientation={orientation} />
             </div>
             <EditorContent
               editor={editor}

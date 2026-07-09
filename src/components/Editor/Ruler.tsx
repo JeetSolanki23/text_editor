@@ -2,18 +2,28 @@ import { cn } from "../../utils/utils";
 
 interface RulerProps {
   orientation: 'horizontal' | 'vertical';
+  pageOrientation: 'portrait' | 'landscape';
 }
 
-const Ruler = ({ orientation }: RulerProps) => {
-  const size = orientation === 'horizontal' ? 794 : 1123;
+const Ruler = ({ orientation, pageOrientation }: RulerProps) => {
+  const isLandscape = pageOrientation === 'landscape';
+  const size = orientation === 'horizontal'
+    ? (isLandscape ? 1123 : 794)
+    : (isLandscape ? 794 : 1123);
   const marks = Array.from({ length: Math.floor(size / 10) + 1 }, (_, i) => i * 10);
 
   return (
     <div
       className={cn(
         "bg-muted/50 dark:bg-muted/20 border-border select-none overflow-hidden",
-        orientation === 'horizontal' ? "h-6 border-b w-[794px] sticky top-0 z-10" : "w-6 border-r h-[1123px] sticky left-0 z-10"
+        orientation === 'horizontal'
+          ? `h-6 border-b sticky top-0 z-10`
+          : `w-6 border-r sticky left-0 z-10`
       )}
+      style={{
+        width: orientation === 'horizontal' ? `${size}px` : '1.5rem',
+        height: orientation === 'vertical' ? `${size}px` : '1.5rem',
+      }}
     >
       <div className={cn(
         "relative",
